@@ -1,0 +1,136 @@
+import os
+import pandas as pd
+import webbrowser
+
+def load_cleaned_data():
+    path = "data/offers_cleaned.csv"
+    if not os.path.isfile(path):
+        raise FileNotFoundError(f"Plik {path} nie został znaleziony.")
+    return pd.read_csv(path)
+
+def search_offers(
+    city=None, min_price=None, max_price=None,
+    min_area=None, max_area=None,
+    rooms=None, winda=None, umeblowane=None
+):
+    df = load_cleaned_data()
+
+    if city:
+        df = df[df["city"].str.lower() == city.lower()]
+    if min_price is not None:
+        df = df[df["main_price_cleaned"] >= min_price]
+    if max_price is not None:
+        df = df[df["main_price_cleaned"] <= max_price]
+    if min_area is not None:
+        df = df[df["area_cleaned"] >= min_area]
+    if max_area is not None:
+        df = df[df["area_cleaned"] <= max_area]
+    if rooms is not None:
+        df = df[df["rooms_cleaned"] == rooms]
+    if winda is not None:
+        df = df[df["winda_cleaned"] == int(bool(winda))]
+    if umeblowane is not None and "wyposazenie_meble" in df.columns:
+        df = df[df["wyposazenie_meble"] == int(bool(umeblowane))]
+
+    return df[[
+        "city", "main_price_cleaned", "area_cleaned", "rooms_cleaned", "winda_cleaned", "url"
+    ]].head(20)
+
+def detect_anomalies_in_result(df):
+    if df.empty:
+        return
+
+    q1 = df["main_price_cleaned"].quantile(0.25)
+    q3 = df["main_price_cleaned"].quantile(0.75)
+    iqr = q3 - q1
+    low = q1 - 1.5 * iqr
+    high = q3 + 1.5 * iqr
+
+    anomalies = df[
+        (df["main_price_cleaned"] < low) |
+        (df["main_price_cleaned"] > high)
+    ]
+
+    if not anomalies.empty:
+        print("\n⚠️ Znaleziono ogłoszenia z nietypową ceną:")
+        print(anomalies[[
+            "city", "main_price_cleaned", "area_cleaned", "rooms_cleaned", "winda_cleaned", "url"
+        ]].head(10))
+
+def open_links_interactively(df):
+    print("\nℹ️ Podaj numer indeksu z lewej strony tabeli (np. 3, 5, 12) lub ENTER, aby zakończyć.")
+    while True:
+        choice = input("📎 Numer ogłoszenia do otwarcia: ").strip()
+        if not choice:
+            print("📎 Zakończono otwieranie linków.")
+            break
+        if choice.isdigit():
+            index = int(choice)
+            if index in df.index:
+                url = df.loc[index, "url"]
+                webbrowser.open(url)
+                print(f"🌐 Otworzono: {url}")
+            else:
+                print("❌ Nie znaleziono ogłoszenia z indeksem:", index)
+        else:
+            print("❌ Wpisz poprawny numer lub naciśnij ENTER.")
+
+def run_search_cli():
+    print("🔎 Interaktywny filtr mieszkań")
+
+    df_all = load_cleaned_data()
+    available_cities = set(df_all['city'].dropna().str.lower().unique())
+
+    def get_valid_city():
+        city_input = input("Miasto (ENTER = dowolne): ").strip()
+        if not city_input:
+            return None
+        if city_input.lower() not in available_cities:
+            print(f"❌ Miasto '{city_input}' nie istnieje w bazie danych.")
+            print(f"ℹ️ Przykładowe miasta: {', '.join(sorted(list(available_cities))[:5])} ...")
+            return get_valid_city()
+        return city_input
+
+    def get_int(prompt):
+        try:
+            val = input(prompt).strip()
+            return int(val) if val else None
+        except:
+            return None
+
+    def get_bool(prompt):
+        val = input(prompt + " (tak/nie): ").strip().lower()
+        if val == "tak":
+            return True
+        if val == "nie":
+            return False
+        return None
+
+    city = get_valid_city()
+    min_price = get_int("Minimalna cena (zł): ")
+    max_price = get_int("Maksymalna cena (zł): ")
+    min_area = get_int("Minimalna powierzchnia (m²): ")
+    max_area = get_int("Maksymalna powierzchnia (m²): ")
+    rooms = get_int("Liczba pokoi (ENTER = dowolna): ")
+    winda = get_bool("Czy ma być winda?")
+    umeblowane = get_bool("Czy ma być umeblowane?")
+
+    result = search_offers(city, min_price, max_price, min_area, max_area, rooms, winda, umeblowane)
+
+    if result.empty:
+        print("❌ Brak ofert spełniających kryteria.")
+    else:
+        print("\n✅ Znalezione oferty:")
+        print(result)
+
+        detect_anomalies_in_result(result)
+
+        open_links_interactively(result)
+
+        save = input("\n💾 Czy zapisać wyniki do Excel? (tak/nie): ").strip().lower()
+        if save == "tak":
+            result.to_excel("data/wyniki_wyszukiwania.xlsx", index=False)
+            print("📁 Zapisano do: data/wyniki_wyszukiwania.xlsx")
+
+if __name__ == "__main__":
+    run_search_cli()

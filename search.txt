@@ -1,0 +1,322 @@
+import pandas as pd
+import os
+import difflib
+
+CITY_LIST = [
+    "warszawa",
+    "kraków",
+    "łódź",
+    "wrocław",
+    "poznań",
+    "gdańsk",
+    "szczecin",
+    "bydgoszcz",
+    "lublin",
+    "katowice",
+    "bialystok",
+    "gdynia",
+    "czestochowa",
+    "radom",
+    "sosnowiec",
+    "toruń",
+    "kielce",
+    "gliwice",
+    "zabrze",
+    "bytom",
+    "olsztyn",
+    "rzeszów",
+    "bielsko-biała",
+    "rybnik",
+    "tarnów",
+    "opole",
+    "gorzów wielkopolski",
+    "zielona góra",
+    "płock",
+    "elbląg",
+    "wałbrzych",
+    "włocławek",
+    "chorzów",
+    "koszalin",
+    "kalisz",
+    "legnica",
+    "grudziądz",
+    "słupsk",
+    "jaworzno",
+    "jastrzębie-zdrój",
+    "nowy sącz",
+    "jelenia góra",
+    "konin",
+    "mysłowice",
+    "inowrocław",
+    "piotrków trybunalski",
+    "piła",
+    "pabianice",
+    "ostrowiec świętokrzyski",
+    "głogów",
+    "suwałki",
+    "lubin",
+    "żory",
+    "zamość",
+    "ostrów wielkopolski",
+    "tczew",
+    "mielec",
+    "kędzierzyn-koźle",
+    "przemyśl",
+    "stalowa wola",
+    "tomaszów mazowiecki",
+    "chełm",
+    "bełchatów",
+    "świdnica",
+    "będzin",
+    "zgierz",
+    "łomża",
+    "legionowo",
+    "pruszków",
+    "siedlce",
+    "sieradz",
+    "gorzów",
+    "racibórz",
+    "ostrołęka",
+    "świętochłowice",
+    "wejherowo",
+    "zawiercie",
+    "skierniewice",
+    "starachowice",
+    "wodzisław śląski",
+    "starogard gdański",
+    "puławy",
+    "tarnobrzeg",
+    "kołobrzeg",
+    "krosno",
+    "radomsko",
+    "otwock",
+    "skarżysko-kamienna",
+    "ciechanów",
+    "kutno",
+    "zduńska wola",
+    "świnoujście",
+    "żyrardów",
+    "bolesławiec",
+    "nowa sól",
+    "knurów",
+    "oświęcim",
+    "sopot",
+]
+
+
+def load_cleaned_data():
+    """Ładuje oczyszczone dane з pliku CSV."""
+    path = "data/offers_cleaned.csv"
+    if not os.path.isfile(path):
+        raise FileNotFoundError(f"Plik {path} nie został znaleziony.")
+    return pd.read_csv(path)
+
+
+def search_offers(filters, df=None):
+    """Фільтрує DataFrame за заданими критеріями."""
+    if df is None:
+        df = load_cleaned_data()
+    for col, (min_val, max_val) in filters.items():
+        if col not in df.columns:
+            continue
+        if min_val is not None:
+            df = df[df[col] >= min_val]
+        if max_val is not None:
+            df = df[df[col] <= max_val]
+    return df
+
+
+def open_links_interactively(df):
+    """Інтерактивно відкриває посилання на оголошення (запитує користувача)."""
+    import webbrowser
+
+    for idx, row in df.iterrows():
+        print(
+            f"\n[{idx+1}] {row.get('main_price_cleaned', '')} zł, {row.get('area_cleaned', '')} m², {row.get('rooms_cleaned', '')} pokoi"
+        )
+        print(f"URL: {row.get('url', '')}")
+        choice = (
+            input("Otworzyć link? [ENTER=tak, n=nie, 0=przerwij]: ").strip().lower()
+        )
+        if choice == "0":
+            break
+        if choice != "n":
+            webbrowser.open(row.get("url", ""))
+
+
+def clear_console():
+    os.system("cls" if os.name == "nt" else "clear")
+
+
+def run_search_cli():
+    while True:
+        print("🔎 Rozszerzony filtr mieszkań")
+        df_all = load_cleaned_data()
+        filters = {}
+
+        # --- Miasto ---
+        while True:
+            city_input = (
+                input("Miasto (np. warszawa / ENTER = dowolne): ").strip().lower()
+            )
+            if not city_input:
+                break
+            if city_input in CITY_LIST:
+                df_all = df_all[df_all["city"].astype(str).str.lower() == city_input]
+                if df_all.empty:
+                    print("❌ Brak ogłoszeń w podanym mieście.")
+                    continue
+                break
+            suggestions = difflib.get_close_matches(
+                city_input, CITY_LIST, n=5, cutoff=0.6
+            )
+            if suggestions:
+                print(f"❌ Nie znaleziono miasta '{city_input}'. Może chodziło o:")
+                [print(f"  [{i}] {s}") for i, s in enumerate(suggestions, 1)]
+                wybor = input("Wybierz numer miasta lub ENTER: ").strip()
+                if wybor.isdigit() and 1 <= int(wybor) <= len(suggestions):
+                    city_input = suggestions[int(wybor) - 1]
+                    df_all = df_all[
+                        df_all["city"].astype(str).str.lower() == city_input
+                    ]
+                    if df_all.empty:
+                        print("❌ Brak ogłoszeń.")
+                        continue
+                    break
+            else:
+                print("❌ Nie znaleziono takiego miasta. Spróbuj ponownie.")
+
+        # --- Winda ---
+        if (
+            input("Czy wymagana winda? [t/N]: ").strip().lower() == "t"
+            and "winda_cleaned" in df_all.columns
+        ):
+            df_all = df_all[df_all["winda_cleaned"] == 1]
+
+        # --- Filtry liczbowe z ograniczeniami logicznymi ---
+        field_limits = {
+            "rooms_cleaned": 10,
+            "area_cleaned": 300,
+            "main_price_cleaned": 30000,
+        }
+
+        break_flag = False
+
+        for col, prompt, typ, minmax in [
+            ("rooms_cleaned", "Minimalna liczba pokoi (ENTER = dowolna): ", int, 0),
+            ("rooms_cleaned", "Maksymalna liczba pokoi (ENTER = dowolna): ", int, 1),
+            ("area_cleaned", "Minimalna powierzchnia (ENTER = dowolna): ", float, 0),
+            ("area_cleaned", "Maksymalna powierzchnia (ENTER = dowolna): ", float, 1),
+            ("main_price_cleaned", "Minimalna cena (ENTER = dowolna): ", float, 0),
+            ("main_price_cleaned", "Maksymalna cena (ENTER = dowolna): ", float, 1),
+        ]:
+            try:
+                val = input(prompt).strip()
+                if val:
+                    num = typ(val)
+                    limit = field_limits.get(col, None)
+                    if limit is not None and num > limit:
+                        print(
+                            f"❌ Wartość {num} dla '{col}' przekracza logiczne ograniczenie ({limit})."
+                        )
+                        print("🔁 Powrót do początku filtrowania.\n")
+                        break_flag = True
+                        break
+                    filters.setdefault(col, [None, None])[minmax] = num
+            except ValueError:
+                print("❌ Niepoprawna liczba.")
+                print("🔁 Powrót do początku filtrowania.\n")
+                break_flag = True
+                break
+
+        if break_flag:
+            continue
+
+        # --- Szukanie ---
+        result = search_offers({k: tuple(v) for k, v in filters.items()}, df_all)
+        if result.empty:
+            print("❌ Brak ofert spełniających kryteria.")
+            continue
+
+        print(f"\n✅ Znalezione oferty: {len(result)}\n")
+        result_display = result.reset_index(drop=True)
+        result_display.index += 1
+
+        print("\n📋 Wszystkie znalezione ogłoszenia:\n")
+        print(
+            result_display[
+                ["city", "main_price_cleaned", "area_cleaned", "rooms_cleaned"]
+            ]
+        )
+
+        # --- Wykrywanie anomalii ---
+        prices = result_display["main_price_cleaned"].dropna()
+        result_display["anomaly"] = ""
+        if len(prices) >= 5:
+            q1, q3 = prices.quantile(0.25), prices.quantile(0.75)
+            iqr, low, high = q3 - q1, q1 - 1.5 * (q3 - q1), q3 + 1.5 * (q3 - q1)
+
+            def anomaly_flag(price):
+                return (
+                    "⬇️ podejrzanie niska"
+                    if price < low
+                    else ("⬆️ podejrzanie wysoka" if price > high else "")
+                )
+
+            result_display["anomaly"] = result_display["main_price_cleaned"].apply(
+                anomaly_flag
+            )
+            anomalies = result_display[result_display["anomaly"] != ""]
+            if not anomalies.empty:
+                print(f"\n⚠️ Znaleziono {len(anomalies)} ogłoszeń z anomalią cenową:\n")
+                for i, (_, row) in enumerate(anomalies.iterrows(), 1):
+                    print(f"➡️ [{i}] {row['anomaly']}")
+                    print(
+                        row[
+                            [
+                                "city",
+                                "main_price_cleaned",
+                                "area_cleaned",
+                                "rooms_cleaned",
+                            ]
+                        ].to_string()
+                    )
+                    print("-" * 60)
+        else:
+            print("\nℹ️ Zbyt mało danych do wyznaczenia anomalii (potrzeba ≥ 5 cen).")
+
+        # --- Tryb inteligentny: znajdź najlepsze okazje ---
+        result_display["price_per_m2"] = (
+            result_display["main_price_cleaned"] / result_display["area_cleaned"]
+        )
+        top_deals = result_display.sort_values("price_per_m2").head(5)
+        print("\n🏆 Najlepsze okazje (cena za m²):")
+        print(
+            top_deals[
+                ["city", "main_price_cleaned", "area_cleaned", "price_per_m2", "url"]
+            ]
+        )
+
+        # --- Otwieranie linków ---
+        while True:
+            wybor = input(
+                "\nWprowadź numer ogłoszenia do otwarcia (0 = wyjście): "
+            ).strip()
+            if not wybor or wybor == "0":
+                break
+            if wybor.isdigit() and 1 <= int(wybor) <= len(result_display):
+                url = result_display.iloc[int(wybor) - 1]["url"]
+                print("Otwieram:", url)
+                import webbrowser
+
+                webbrowser.open(url)
+            else:
+                print("❌ Nieprawidłowy numer.")
+
+        if input("\n[0] Menu główne   [ENTER] Nowe wyszukiwanie: ").strip() == "0":
+            break
+        clear_console()
+
+
+if __name__ == "__main__":
+    run_search_cli()

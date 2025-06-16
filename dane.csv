@@ -1,0 +1,26 @@
+URL zbioru;Tytuł;Opis;Słowo kluczowe;Kategoria;Częstotliwość aktualizacji;Data udostępnienia zbioru;Data aktualizacji zbioru;Liczba wyświetleń zbioru;Liczba pobrań zbioru;Liczba danych;Warunki wykorzystywania;Licencja;źródło;Zbiór zawiera dane o wysokiej wartości;Zbiór zawiera dane o wysokiej wartości z wykazu KE;Zbiór zawiera dane dynamiczne;Zbiór zawiera dane badawcze;Lokalizacje zbiorów danych;Dokumenty uzupełniające zbioru (nazwa, język, url, rozmiar pliku);URL dostawcy;Rodzaj instytucji;Nazwa;Skrót;Id Instytucji;REGON;EPUAP;Adres do doręczeń elektronicznych;Strona internetowa;Data utworzenia dostawcy;Data aktualizacji dostawcy;Liczba zbiorów danych;Liczba zasobów dostawcy;Kod pocztowy;Miasto;Rodzaj ulicy;Ulica;Numer ulicy;Numer mieszkania;Email;Telefon;URL danych;Tytuł danych;Opis danych;Data udostępnienia danych;Dane na dzień;Poziom otwartości danych;Typ;Format pliku;Rozmiar pliku;Liczba wyświetleń danych;Liczba pobrań danych;Tabela;Mapa;Wykres;Zasób zawiera dane o wysokiej wartości;Zasób zawiera dane o wysokiej wartości z wykazu KE;Zasób zawiera dane dynamiczne;Zasób zawiera dane badawcze;Zawiera wykaz chronionych danych;Lokalizacje danych;URL pliku (do pobrania);znaki umowne;Dokumenty uzupełniające zasobu (nazwa, język, url, rozmiar pliku)
+https://dane.gov.pl/pl/dataset/2621,srednie-wyniki-egzaminu-maturalnego;Średnie wyniki egzaminu maturalnego;"Egzamin maturalny jest przeprowadzany jako zakończenie szkoły średniej, a jego wynik warunkuje podjęcie dalszej edukacji. Przystępują do niego m.in. absolwenci liceów ogólnokształcących, absolwenci techników, a także absolwenci innych szkół ponadpodstawowych.
+
+Od 2015 roku egzamin maturalny przeprowadzany jest w nowej formule. Aby zdać egzamin i uzyskać świadectwo należy: uzyskać co najmniej 30% punktów z egzaminu z każdego przedmiotu obowiązkowego w części ustnej i w części pisemnej oraz przystąpić do egzaminu pisemnego z wybranego przedmiotu dodatkowego (brak progu zaliczenia).
+
+Zdający przystępuje obowiązkowo do 2 egzaminów w części ustnej: język polski i język obcy nowożytny oraz 4 egzaminów w części pisemnej: na poziomie podstawowym: język polski, język obcy nowożytny i  matematyka oraz egzamin z wybranego przedmiotu dodatkowego na poziomie rozszerzonym. Oprócz jednego obowiązkowego egzaminu z przedmiotu dodatkowego na poziomie rozszerzonym można przystąpić do egzaminów z nie więcej niż pięciu innych przedmiotów. Absolwenci szkół lub oddziałów z językiem nauczania mniejszości narodowej obowiązkowo także przystępują także do egzaminu z języka tej mniejszości.
+
+Dane dotyczą egzaminu maturalnego przeprowadzonego w maju.
+
+W roku 2015 podano łącznie liczbę osób zdających egzamin maturalny według nowej i starej formuły.
+
+Więcej informacji na stronie Centralnej Komisji Egzaminacyjnej: Egzamin maturalny";egzamin maturalny, edukacja;Edukacja, kultura i sport;rocznie;2021-12-31T10:23:28.075865+00:00;2025-01-27T08:59:06.942847+00:00;2263;1428;1;;CC BY 4.0;;TAK;NIE;NIE;NIE;Polska;;https://dane.gov.pl/pl/institution/34,glowny-urzad-statystyczny;Administracja rządowa;Główny Urząd Statystyczny;GUS;34;000331501;http://epuap.gov.pl/wps/portal/strefa-klienta/katalog-spraw/profil-urzedu/y52d3bvq62;;http://stat.gov.pl;2015-06-22T09:41:54.724473+00:00;2022-07-21T17:16:43.653703+00:00;108;150;00-925;Warszawa;al.;Niepodległości;208;;kancelariaogolnaGUS@stat.gov.pl;0048226083000;https://dane.gov.pl/pl/dataset/2621/resource/63961;Średnie wyniki egzaminu maturalnego;"Częstotliwość publikacji: roczna
+
+Okres obserwacji: dane roczne
+
+Dostępny szereg czasowy: od 2015
+
+Przekrój: Polska; formuła egzaminu; rodzaj egzaminu; poziom egzaminu; przedmiot; płeć
+
+Definicje pojęć: Egzamin maturalny jest przeprowadzany jako zakończenie szkoły średniej, a jego wynik warunkuje podjęcie dalszej edukacji. Przystępują do niego m.in. absolwenci liceów ogólnokształcących, absolwenci techników, a także absolwenci innych szkół ponadpodstawowych.
+
+Dane dotyczą egzaminu maturalnego przeprowadzonego w maju.
+
+Więcej informacji na stronie Centralnej Komisji Egzaminacyjnej: Egzamin maturalny
+
+Źródło danych, zestaw danych, gestor: Dane z zestawów informacyjnych Centralnej Komisji Egzaminacyjnej; opracowanie wyników badań – Główny Urząd Statystyczny; Urząd Statystyczny w Gdańsku";2025-01-27T08:59:06.942847+00:00;2025-01-27;0;Plik;;;314;0;NIE;NIE;NIE;TAK;NIE;NIE;NIE;NIE;Polska;;;
